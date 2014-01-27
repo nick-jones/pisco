@@ -1,0 +1,4 @@
+pisco
+./src/gen-cpp
+*.o
+*.d
