@@ -1,4 +1,5 @@
 pisco
-./src/gen-cpp
+pisco.tar
+src/gen-cpp
 *.o
 *.d
