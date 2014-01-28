@@ -3,77 +3,79 @@
 using namespace std;
 
 /*
- * Glob-style match function. It determines whether a pattern satisfies a string.
+ * Glob-style matching function, only wildcard characters are currently supported. This function determines whether
+ * a given pattern satisfies a string. It uses a fairly naïve bruteforce approach to achieve this.
  */
 bool Matcher::check(const string& input, const string& pattern) {
   const char wildcard = '*';
+
   unsigned long input_pos = 0;
-  unsigned long input_len = input.length();
   unsigned long pattern_pos = 0;
+
+  unsigned long input_len = input.length();
   unsigned long pattern_len = pattern.length();
 
-  // Loop throught matching input and pattern characters
-  while (input_pos < input_len && pattern_pos < pattern_len && pattern[pattern_pos] != wildcard
-          && pattern[pattern_pos] == input[input_pos]) {
-    // Increment input and pattern position pointers, as they match
-    input_pos++;
-    pattern_pos++;
+  bool trailing_wildcard = pattern[pattern_len - 1] == wildcard;
+  bool leading_wildcard = pattern[0] == wildcard;
+
+  // Final wildcard is irrelevant, as we're only interested in whether the text up until it has matched
+  if (trailing_wildcard) {
+    pattern_len--;
   }
 
-  // If the end of the pattern is a wildcard, and the pattern position is 1 character off, then the pattern matches
-  if (pattern_pos+1 == pattern_len && pattern[pattern_pos] == wildcard) {
-    return true;
+  // Scroll through initial matching characters, if there is no leading wildcard character
+  if (!leading_wildcard) {
+    while (input_pos < input_len && pattern_pos < pattern_len
+            && input[input_pos] == pattern[pattern_pos]
+            && pattern[pattern_pos] != wildcard) {
+      // Shift the positions forward
+      input_pos++;
+      pattern_pos++;
+    }
+
+    // All initial pattern characters must have matched
+    if (pattern[pattern_pos] != wildcard && (input_pos != input_len || pattern_pos != pattern_len)) {
+      return false;
+    }
   }
 
-  // If the entire input string has been read through, then the pattern matches if it has been entirely read too
-  if (input_pos == input_len) {
-    return pattern_pos == pattern_len;
-  }
+  // Check whether a match has occurred yet
+  bool matched = pattern_pos++ == pattern_len && (input_pos == input_len || trailing_wildcard);
 
-  // If the pattern hasn't reached a wildcard character, then it there are character mismatches
-  if (pattern_pos == pattern_len || pattern[pattern_pos] != '*') {
-    return false;
-  }
+  unsigned long input_check_pos;
+  unsigned long pattern_check_pos;
 
-  // Shift past the wildcard character
-  pattern_pos++;
-
-  bool matched = false;
-  unsigned int input_check_start_pos;
-  unsigned int input_check_pos;
-  unsigned int pattern_check_pos;
-
-  while (input_pos < input_len && !matched) {
-    // Scroll forward to find a character that matches the first character after the wildcard
+  while (input_pos < input_len && pattern_pos < pattern_len && !matched) {
+    // Look for the first character of the current pattern segment in the input
     if (input[input_pos] != pattern[pattern_pos]) {
       input_pos++;
       continue;
     }
 
-    // Once there is a match, check the subsequent characters
+    // First character matches, check the subsequent characters
+    input_check_pos = input_pos + 1;
     pattern_check_pos = pattern_pos + 1;
-    input_check_pos = input_check_start_pos = input_pos + 1;
 
     while (input_check_pos < input_len && pattern_check_pos < pattern_len
-            && input[input_check_pos] == pattern[pattern_check_pos] && pattern[pattern_check_pos] != wildcard) {
-      // Increment the check input and pattern positions, as they match
+            && input[input_check_pos] == pattern[pattern_check_pos]
+            && pattern[pattern_check_pos] != wildcard) {
+      // Increment the positions
       input_check_pos++;
       pattern_check_pos++;
     }
 
-    if ((pattern_check_pos == pattern_len && input_check_pos == input_len)
-          || (pattern_check_pos+1 == pattern_len && pattern[pattern_check_pos] == '*')) {
-       // If the end of the pattern is reached, and the input has been consumed, then the pattern matches
-       matched = true;
+    if (pattern_check_pos == pattern_len && (input_check_pos == input_len || trailing_wildcard)) {
+      // A match has occurred if the entire pattern has been consumed along with the input
+      matched = true;
     }
     else if (pattern[pattern_check_pos] == wildcard) {
-      // Another wildcard has been reached
+      // Another wildcard has been hit, so this segment is covered; move onto the next
       input_pos = input_check_pos;
       pattern_pos = pattern_check_pos + 1;
     }
     else {
-      // Non match, continue from +1 of the previous position
-      input_pos = input_check_start_pos;
+      // Look for another occurance of the pattern segments first character in the input
+      input_pos++;
     }
   }
 
