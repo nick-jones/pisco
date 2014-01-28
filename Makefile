@@ -18,7 +18,7 @@ LD_FLAGS := -L/usr/local/lib -L/usr/include/boost -lthrift -lthriftnb -levent -l
 all: pisco
 
 tar:
-	tar cvf pisco.tar def/pisco.thrift src/*.cpp src/*.h src/gen-cpp/*.cpp src/gen-cpp/*.h Makefile README.md
+	tar cvf pisco.tar def/pisco.thrift src/*.cpp src/*.h Makefile README.md
 
 %.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
