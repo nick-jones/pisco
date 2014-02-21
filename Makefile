@@ -29,6 +29,8 @@ pisco: $(OBJECTS)
 clean:
 	$(RM) -r src/*.o src/*.d src/gen-cpp pisco pisco.tar
 
+thrift: $(THRIFT_FILES)
+
 $(PISCO_SOURCE): $(THRIFT_FILES)
 
 $(THRIFT_FILES): def/pisco.thrift
