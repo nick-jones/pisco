@@ -3,10 +3,33 @@
 using namespace std;
 
 /*
+ * Glob-style matching function, which accepts sets of inclusion and exclusion patterns.
+ */
+bool Matcher::check(const string& input, const set<string>& include, const set<string>& exclude) {
+
+  set<string>::const_iterator it;
+
+  for (it = include.begin(); it != include.end(); ++it) {
+    if (!Matcher::check(input, *it)) {
+      return false;
+    }
+  }
+
+  for (it = exclude.begin(); it != exclude.end(); ++it) {
+    if (Matcher::check(input, *it)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/*
  * Glob-style matching function, only wildcard characters are currently supported. This function determines whether
  * a given pattern satisfies a string. It uses a fairly naïve bruteforce approach to achieve this.
  */
 bool Matcher::check(const string& input, const string& pattern) {
+
   const char wildcard = '*';
 
   unsigned long input_pos = 0;

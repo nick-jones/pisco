@@ -61,21 +61,26 @@ bool Database::remove(const int32_t id) {
 }
 
 /*
- * Lookup an item by pattern. Limit can be supplied to restrict the results size. If total_required is FALSE, then
+ * Lookup an item by patterns. Limit can be supplied to restrict the results size. If total_required is FALSE, then
  * no total count is supplied; this affords quicker lookup, as it may be the case that the entire set of values
  * need be scanned.
  */
-void Database::lookup(Result& result, const string& pattern, const uint32_t limit, const bool total_required) {
-
-  printf("Lookup: %s (limit: %d, total_required: %d)\n", pattern.c_str(), limit, total_required);
+void Database::lookup(Result& result, const Query& query) {
 
   unsigned long results_size;
   store_reverse_iterator it;
 
+  set<string> include_patterns = query.include_patterns;
+  set<string> exclude_patterns = query.exclude_patterns;
+  bool total_required = query.total_required;
+  uint32_t limit = query.limit;
+
   for (it = store.rbegin(); it != store.rend(); ++it) {
     Item& item = *(it->second);
 
-    if (item.deleted || !Matcher::check(item.value, pattern)) {
+    if (item.deleted
+        || !Matcher::check(item.value, include_patterns, exclude_patterns)) {
+      // Item is deleted or doesn't match the supplied pattern rules
       continue;
     }
 

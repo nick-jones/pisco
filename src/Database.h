@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <set>
 #include <unordered_map>
 #include <utility>
 #include <boost/regex.hpp>
@@ -25,5 +26,5 @@ class Database {
   Database();
   bool add(const pisco::thrift::Item& item);
   bool remove(const int32_t id);
-  void lookup(pisco::thrift::Result& result, const std::string& pattern, const uint32_t limit, const bool total_required);
+  void lookup(pisco::thrift::Result& result, const pisco::thrift::Query& query);
 };

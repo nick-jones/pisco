@@ -23,8 +23,8 @@ class SearchHandler : virtual public SearchIf {
  public:
   SearchHandler(const shared_ptr<Database> d) : database(d) { }
 
-  void lookup(Result& _return, const std::string& pattern, const int32_t limit, const bool total_required) {
-    database->lookup(_return, pattern, (unsigned) limit, total_required);
+  void lookup(Result& _return, const Query& query) {
+    database->lookup(_return, query);
   }
 
   bool add(const Item& item) {
