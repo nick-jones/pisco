@@ -6,8 +6,8 @@ const i32 DEFAULT_LIMIT = 10
 struct Item {
   1: required i32 id,
   2: required i32 time,
-  3: optional string value,
-  4: optional bool deleted
+  3: required string value,
+  4: required bool deleted = false
 }
 
 struct Result {
