@@ -65,7 +65,9 @@ bool Database::remove(const int32_t id)
 }
 
 /*
- * Lookup an item by a single pattern.
+ * Lookup an item by a single pattern. If total_required is FALSE, then no total
+ * count is returned; this affords quicker lookup, as it may be the case that
+ * the entire set of values need be scanned.
  */
 void Database::lookup(Result& result, const Query& query)
 {
@@ -90,9 +92,8 @@ void Database::lookup(Result& result, const Query& query)
 }
 
 /*
- * Lookup an item by patterns. Limit can be supplied to restrict the results size. If total_required is FALSE, then
- * no total count is supplied; this affords quicker lookup, as it may be the case that the entire set of values
- * need be scanned.
+ * Lookup an item by multiple inclusion and exclusion patterns. Also provides
+ * the ability to filter by attributes and include deleted items.
  */
 void Database::lookupAdvanced(Result& result, const AdvancedQuery& query)
 {
@@ -100,17 +101,23 @@ void Database::lookupAdvanced(Result& result, const AdvancedQuery& query)
   string excludes_flat = join(query.exclude_patterns, ", ");
   printf("lookupAdvanced: %s ~ %s\n", includes_flat.c_str(), excludes_flat.c_str());
 
-  store_reverse_iterator it;
+  store_reverse_iterator it_store;
   set<string> include_patterns = query.include_patterns;
   set<string> exclude_patterns = query.exclude_patterns;
+  map<string, bool> with_attributes = query.with_attributes;
+  bool check_attributes = with_attributes.size() > 0;
   bool total_required = query.total_required;
-  bool include_deleted = query.include_deleted;
+  bool non_deleted_only = !query.include_deleted;
   uint32_t limit = query.limit;
 
-  for (it = store.rbegin(); it != store.rend(); ++it) {
-    Item& item = *(it->second);
+  for (it_store = store.rbegin(); it_store != store.rend(); ++it_store) {
+    Item& item = *(it_store->second);
 
-    if (item.deleted && !include_deleted) {
+    if (non_deleted_only && item.deleted) {
+      continue;
+    }
+
+    if (check_attributes && !this->itemHasAttributes(item, with_attributes)) {
       continue;
     }
 
@@ -122,6 +129,28 @@ void Database::lookupAdvanced(Result& result, const AdvancedQuery& query)
       break;
     }
   }
+}
+
+/*
+ * Indicates whether the supplied item holds *all* of the supplied attributes
+ * by key & value.
+ */
+bool Database::itemHasAttributes(const Item& item, map<string, bool> attributes)
+{
+  map<string, bool> item_attributes = item.attributes;
+  attribute_iterator it;
+  attribute_iterator result;
+  attribute_iterator miss = item_attributes.end();
+
+  for (it = attributes.begin(); it != attributes.end(); ++it) {
+    result = item_attributes.find(it->first);
+
+    if (result == miss || result->second != it->second) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /*
