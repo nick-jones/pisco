@@ -16,32 +16,45 @@ using boost::shared_ptr;
 
 using namespace ::pisco::thrift;
 
-class SearchHandler : virtual public SearchIf {
+class SearchHandler : virtual public SearchIf
+{
  private:
   shared_ptr<Database> database;
 
  public:
-  SearchHandler(const shared_ptr<Database> d) : database(d) { }
+  SearchHandler(const shared_ptr<Database> d) : database(d)
+  {
+  }
 
-  void lookup(Result& _return, const Query& query) {
+  void lookup(Result& _return, const Query& query)
+  {
     database->lookup(_return, query);
   }
 
-  bool add(const Item& item) {
+  void lookupAdvanced(Result& _return, const AdvancedQuery& query)
+  {
+    database->lookupAdvanced(_return, query);
+  }
+
+  bool add(const Item& item)
+  {
     return database->add(item);
   }
 
-  bool replace(const Item& item) {
+  bool replace(const Item& item)
+  {
     database->remove(item.id);
     return database->add(item);
   }
 
-  bool remove(const int32_t id) {
+  bool remove(const int32_t id)
+  {
     return database->remove(id);
   }
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int port = 9090;
 
   shared_ptr<Database> database(new Database());

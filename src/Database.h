@@ -10,7 +10,8 @@
 #include "Match.h"
 #include "gen-cpp/Search.h"
 
-class Database {
+class Database
+{
  private:
   typedef boost::shared_ptr<pisco::thrift::Item> item_shared_pointer;
   typedef std::unordered_map<int32_t, item_shared_pointer>::iterator ids_iterator;
@@ -20,11 +21,13 @@ class Database {
   std::multimap<int32_t, item_shared_pointer> store;
   std::unordered_map<int32_t, item_shared_pointer> ids;
 
-  store_iterator locate_item(const int32_t time, const int32_t id);
+  store_iterator locateItem(const int32_t time, const int32_t id);
+  bool pushResult(pisco::thrift::Result& result, int32_t id, int32_t limit, bool total_required);
 
  public:
   Database();
   bool add(const pisco::thrift::Item& item);
   bool remove(const int32_t id);
   void lookup(pisco::thrift::Result& result, const pisco::thrift::Query& query);
+  void lookupAdvanced(pisco::thrift::Result& result, const pisco::thrift::AdvancedQuery& query);
 };
