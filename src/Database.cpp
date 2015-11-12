@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include "Database.h"
-#include <boost/algorithm/string/join.hpp>
 
 using namespace ::pisco::thrift;
 using namespace std;
 using boost::shared_ptr;
 using boost::make_shared;
-using boost::algorithm::join;
 
 Database::Database()
 {
@@ -17,8 +15,6 @@ Database::Database()
  */
 bool Database::add(const Item& item)
 {
-  printf("add: %d, %s, %d, %d\n", item.id, item.value.c_str(), item.time, item.deleted);
-
   bool result = false;
   pair<ids_iterator, bool> insert_res;
 
@@ -42,8 +38,6 @@ bool Database::add(const Item& item)
  */
 bool Database::remove(const int32_t id)
 {
-  printf("remove: %d\n", id);
-
   bool result = false;
   ids_iterator ids_result = ids.find(id);
 
@@ -71,8 +65,6 @@ bool Database::remove(const int32_t id)
  */
 void Database::lookup(Result& result, const Query& query)
 {
-  printf("lookup: %s\n", query.pattern.c_str());
-
   store_reverse_iterator it;
   string pattern = query.pattern;
   bool total_required = query.total_required;
@@ -97,10 +89,6 @@ void Database::lookup(Result& result, const Query& query)
  */
 void Database::lookupAdvanced(Result& result, const AdvancedQuery& query)
 {
-  string includes_flat = join(query.include_patterns, ", ");
-  string excludes_flat = join(query.exclude_patterns, ", ");
-  printf("lookupAdvanced: %s ~ %s\n", includes_flat.c_str(), excludes_flat.c_str());
-
   store_reverse_iterator it_store;
   set<string> include_patterns = query.include_patterns;
   set<string> exclude_patterns = query.exclude_patterns;
